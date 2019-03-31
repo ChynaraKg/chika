@@ -1,0 +1,455 @@
+{
+
+background(0,0,0,0);
+
+noStroke();
+fill(245, 245, 245);
+rect(55, 236, 291, 82);
+ellipse(200, 319, 291, 80);
+
+fill(255, 255, 255);
+ellipse(200, 230, 281, 100);
+
+for(var i = -7; i < 8; i++){
+    
+    pushMatrix();
+    
+    translate(200, 313);
+    scale(0.79, 0.26);
+    rotate(i*14.4);
+    
+    noStroke();
+    fill(255, 115, 222);
+    ellipse(0, 185, 50, 15);
+    
+    popMatrix();
+    
+}
+
+noStroke();
+fill(245, 245, 245);
+ellipse(200, 316, 291, 72);
+rect(55, 297, 291, 19);
+
+for(var i = -5; i < 20; i++){
+    
+    pushMatrix();
+    
+    translate(200, 230);
+    scale(0.77, 0.27);
+    rotate(i*14.4);
+    
+    noStroke();
+    fill(255, 115, 222);
+    ellipse(0, 185, 50, 15);
+    
+    popMatrix();
+    
+}
+
+}//bottom layer
+
+{
+
+noStroke();
+fill(245, 245, 245);
+rect(96, 160, 208, 60);
+ellipse(200, 222, 208, 80);
+
+fill(255, 255, 255);
+ellipse(200, 160, 200, 80);
+
+for(var i = -5; i < 20; i++){
+    
+    pushMatrix();
+    
+    translate(200, 160);
+    scale(0.55, 0.22);
+    rotate(i*14.4);
+    
+    noStroke();
+    fill(255, 115, 222);
+    ellipse(0, 185, 50, 15);
+    
+    popMatrix();
+    
+}
+
+}//top layer
+
+{
+
+var cakeImage = get(0, 0, width, height);
+
+var cake = function(x, y){
+
+pushMatrix();
+
+translate(x, y);
+
+image(cakeImage, -width/2, -height/2);
+
+popMatrix();
+
+};
+
+}//cake image
+
+{
+
+{
+    
+angleMode = "radians";
+
+var gravity = new PVector(0, -0.003);
+
+var Particle = function(position) {
+    this.acceleration = new PVector(0, 0);
+    this.velocity = new PVector(random(-0.2, 0.2), random(-0.5, 0));
+    this.position = position.get();
+    this.timeToLive = 255.0;
+    this.mass = random(9, 15);
+    this.yc = random(255);
+};
+
+Particle.prototype.run = function() {
+    this.update();
+    this.display();
+};
+
+Particle.prototype.applyForce = function(force) {
+    var f = force.get();
+    f.div(this.mass);
+    this.acceleration.add(f);
+};
+
+Particle.prototype.update = function() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+    this.timeToLive -= 5.0;
+};
+
+Particle.prototype.display = function() {
+    noStroke();
+    fill(255, this.yc, 0, this.timeToLive/2);
+    ellipse(this.position.x, this.position.y, this.mass, this.mass);
+};
+
+Particle.prototype.isDead = function(){
+    if (this.timeToLive < 0) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+var Confetti = function(position) {
+    Particle.call(this, position);
+};
+
+
+var ParticleSystem = function(position) {
+    this.origin = position.get();
+    this.particles = [];
+};
+
+ParticleSystem.prototype.addParticle = function() {
+    this.particles.push(new Particle(this.origin));
+};
+
+ParticleSystem.prototype.applyForce = function(f) {
+    for(var i = 0; i < this.particles.length; i++){
+        this.particles[i].applyForce(f);
+    }
+};
+
+ParticleSystem.prototype.applyGravity = function() {
+    for(var i = 0; i < this.particles.length; i++) {
+        var particleG = gravity.get();
+        particleG.mult(this.particles[i].mass);
+        this.particles[i].applyForce(particleG);
+    }
+};
+
+ParticleSystem.prototype.run = function(){
+	for (var i = this.particles.length-1; i >= 0; i--) {
+        var p = this.particles[i];
+        p.run();
+        if (p.isDead()) {
+            this.particles.splice(i, 1);
+        }
+    }
+};
+
+var particleSystem = new ParticleSystem(new PVector(0, 0));
+
+angleMode = "degrees";
+
+}//from KA particle lesson credit to them
+
+var candleout = [false, false, false, false, false];
+
+var candle = function(x, y, candleNum){
+
+noStroke();
+fill(199, 0, 0);
+rect(x, y-1, 10, 73, 3);
+
+fill(255, 59, 59);
+
+for(var i = 0; i < 6; i++){
+
+quad(x, y+i*12, x+10, y+3+i*12, x+10, y+10+i*12, x, y+6+i*12);
+
+}
+
+stroke(0);
+strokeWeight(2);
+line(x+5, y-1, x+5, y-8);
+
+pushMatrix();
+
+translate(x+5, y-10);
+
+if(candleout[candleNum] === false){
+
+particleSystem.applyGravity(gravity);
+particleSystem.run();
+
+}
+
+popMatrix();
+
+if(dist(x+5, y-10, mouseX, mouseY) <= 15 && mouseIsPressed){
+    
+    candleout[candleNum] = true;
+    
+}
+
+};
+
+}//candles
+
+{
+
+var sCake = function(){
+    
+cake(200, 200);
+    
+for(var i = 0; i < 5; i++){
+        
+        candle(129+i*32, 90, i);
+        
+    }
+    
+for(var i = 0; i < 3; i++){
+        
+        particleSystem.addParticle();
+        
+    }
+    
+if(candleout[0] === false || candleout[1] === false || candleout[2] === false || candleout[3] === false || candleout[4] === false){
+        
+        textAlign(CENTER, CENTER);
+        textSize(20);
+        fill(56, 56, 56);
+        text("нажми на огонь чтобы задуть свечи.", 200, 384);
+        fill(16, 22, 204);
+        text("нажми на огонь чтобы задуть свечи.", 201, 382);
+        
+    }
+
+};
+
+}//cake
+
+{
+
+background(0,0,0,0);
+
+strokeWeight(4);
+stroke(61, 46, 0);
+fill(153, 115, 0);
+
+for(var i = -1; i < 4; i++){
+    
+    rect(-20, 280+i*30, 440, 30);
+    
+    
+}
+
+noStroke();
+fill(168, 131, 20);
+
+for(var i = -1; i < 4; i++){
+    
+    rect(-20, 303+i*30, 440, 6);
+    
+    
+}
+
+strokeWeight(6);
+stroke(140, 140, 140);
+fill(212, 212, 212);
+ellipse(200, 322, 381, 122);
+noStroke();
+fill(230, 230, 230);
+ellipse(200, 322, 340, 94);
+
+var tableImage = get(0, 0, 400, 400);
+
+}//table and plate
+
+{
+
+var bday = function(){
+
+this.pos = new PVector(200, -100);
+this.velocity = new PVector(0, 0);
+this.acceleration = new PVector(0, 0.20);
+this.elasticity = new PVector(0, -0.6);
+this.stopPosition = 45;
+
+};
+bday.prototype.draw = function() {
+    
+    textFont(createFont("bold"));
+    textSize(30);
+    fill(255, 0, 0);
+    text("С днем рождения , ТОТА!!!", this.pos.x-2, this.pos.y+4);
+    fill(255, 255, 255);
+    text("С днем рождения , ТОТА!!!", this.pos.x, this.pos.y);
+    
+};
+bday.prototype.bounce = function(){
+    
+    this.pos.add(this.velocity);
+    this.velocity.add(this.acceleration);
+    this.acceleration = new PVector(0, 0.20);
+    
+    if(this.pos.y >= this.stopPosition){
+        
+        this.pos.y = this.stopPosition;
+        this.velocity.mult(this.elasticity);
+        this.acceleration.mult(0);
+        this.elasticity.mult(0.9);
+        
+    }
+    
+};
+bday.prototype.present = function(){
+    
+    this.draw();
+    
+    this.bounce();
+    
+};
+var birthday = new bday();
+
+var Confetti = function(){
+
+this.x = random(400);
+this.y = random(-30, -400);
+this.rot = 0;
+this.rotSpeed = random(0.6, 1.5);
+this.color = random(255);
+this.fallSpeed = random(2, 4);
+this.type = floor(random(2.999));
+this.size = random(0.8, 1.2);
+
+};
+Confetti.prototype.draw = function() {
+    
+    colorMode(HSB);
+    
+    pushMatrix();
+    
+    translate(this.x, this.y);
+    scale(this.size);
+    rotate(this.rot);
+    
+    noStroke();
+    
+    fill(this.color, 255, 255);
+    
+    switch(this.type){
+        
+        case 0:
+            rect(-10, -10, 20, 20);
+            break;
+            
+        case 1:
+            ellipse(0, 0, 20, 20);
+            break;
+            
+        case 2:
+            triangle(0, -10, -10, 10, 10, 10);
+            break;
+            
+    }
+    
+    popMatrix();
+    
+    colorMode(RGB);
+    
+};
+Confetti.prototype.fall = function(){
+    
+    this.y += this.fallSpeed;
+    
+    this.rot += this.rotSpeed;
+    
+    if(this.y >= 430){
+        
+        this.y = -30;
+        
+    }
+    
+};
+Confetti.prototype.create = function(){
+    
+    this.draw();
+    
+    this.fall();
+    
+};
+var ConfettiShower = function(){
+
+this.confettiArray = [];
+this.confettiAmount = 30;
+for(var i = 0; i < this.confettiAmount; i++){
+        
+        this.confettiArray.push(new Confetti());
+        
+    }
+
+};
+ConfettiShower.prototype.draw = function() {
+    
+    for(var i = 0; i < this.confettiArray.length; i++){
+        
+        this.confettiArray[i].create();
+        
+    }
+    
+};
+var bdayConfetti = new ConfettiShower();
+
+}//"happy birthday" and  confetti
+
+var draw = function() {
+    
+    background(219, 219, 219);
+    
+    image(tableImage, 0, 0);
+    sCake();
+    
+    if(candleout[0] === true && candleout[1] === true && candleout[2] === true && candleout[3] === true && candleout[4] === true){
+        
+        bdayConfetti.draw();
+        birthday.present();
+        
+    }
+    
+};
